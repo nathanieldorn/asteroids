@@ -1,7 +1,7 @@
 import pygame, random
 
 from circleshape import CircleShape
-from constants import ASTEROID_MIN_RADIUS
+from constants import *
 from player import Player
 
 class Asteroid(CircleShape):
@@ -17,6 +17,16 @@ class Asteroid(CircleShape):
 
     def update(self, dt):
         self.position += self.velocity * dt
+
+        if self.position.x > SCREEN_WIDTH + self.radius:
+            self.position.x = -self.radius
+        elif self.position.x < -self.radius:
+            self.position.x = SCREEN_WIDTH + self.radius
+
+        if self.position.y > SCREEN_HEIGHT + self.radius:
+            self.position.y = -self.radius
+        elif self.position.y < -self.radius:
+            self.position.y = SCREEN_HEIGHT + self.radius
 
     def split(self):
         self.kill()

@@ -36,6 +36,7 @@ def main():
         dt = clock.tick(60) / 1000
         for upd in updatable:
             upd.update(dt)
+
         if player1.phase_shift() is False:
             for coll in asteroids:
                 if coll.collision(player1) is False:

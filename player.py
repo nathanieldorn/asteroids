@@ -1,8 +1,9 @@
 import pygame
+from pygame.sprite import WeakDirtySprite
 
 from circleshape import CircleShape
 from shot import Shot
-from constants import PLAYER_RADIUS, PLAYER_SHOOT_COOLDOWN, PLAYER_TURN_SPEED, PLAYER_SPEED
+from constants import *
 
 
 class Player(CircleShape):
@@ -13,6 +14,7 @@ class Player(CircleShape):
         self.shoot_timer = 0
         self.phase_timer = 0
         self.phase_cooldown = 0
+        self.warp_cooldown = 0
         self.player_score = 0
 
     def triangle(self):
@@ -28,6 +30,14 @@ class Player(CircleShape):
             player_triangle = pygame.draw.polygon(screen, (255, 255, 0), self.triangle(), 2)
         else:
             player_triangle = pygame.draw.polygon(screen, (255, 255, 255), self.triangle(), 2)
+            if self.warp_cooldown > 0:
+                forward = pygame.Vector2(0, 1).rotate(self.rotation)
+                right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
+                a = self.position + forward * self.radius
+                b = self.position - forward * self.radius - right
+                c = self.position - forward * self.radius + right
+                ship_overheat = pygame.draw.line(screen, (255, 0, 0), (b), (c), 2)
+                #pygame.draw.polygon(screen, (255, 0, 0), self.triangle(), 2)
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -49,17 +59,32 @@ class Player(CircleShape):
                     self.shoot_timer = PLAYER_SHOOT_COOLDOWN
             if keys[pygame.K_f]:
                 if self.phase_timer <= 0 and self.phase_cooldown <= 0:
-                    self.phase_shift()
                     self.phase_timer = PLAYER_SHOOT_COOLDOWN * 10
                     self.phase_cooldown = PLAYER_SHOOT_COOLDOWN * 100
+                    self.phase_shift()
+            if keys[pygame.K_q]:
+                if self.warp_cooldown <= 0:
+                    self.warp_cooldown = PLAYER_SHOOT_COOLDOWN * 50
+                    self.warp_jump(self.position)
 
             self.phase_cooldown -= dt
+            self.warp_cooldown -= dt
             self.phase_timer -= dt
             self.shoot_timer -= dt
 
     def move(self, dt):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         self.position += forward * PLAYER_SPEED * dt
+
+        if self.position.x > SCREEN_WIDTH + self.radius:
+            self.position.x = -self.radius
+        elif self.position.x < -self.radius:
+            self.position.x = SCREEN_WIDTH + self.radius
+
+        if self.position.y > SCREEN_HEIGHT + self.radius:
+            self.position.y = -self.radius
+        elif self.position.y < -self.radius:
+            self.position.y = SCREEN_HEIGHT + self.radius
 
     def shoot(self, position):
         bullet  = Shot(position.x, position.y)
@@ -69,3 +94,7 @@ class Player(CircleShape):
         while self.phase_timer > 0:
             return True
         return False
+
+    def warp_jump(self, position):
+        position.x = SCREEN_WIDTH - position.x
+        position.y = SCREEN_HEIGHT - position.y
