@@ -11,6 +11,9 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.shoot_timer = 0
+        self.phase_timer = 0
+        self.phase_cooldown = 0
+        self.player_score = 0
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -21,7 +24,10 @@ class Player(CircleShape):
         return [a, b, c]
 
     def draw(self, screen):
-        player_triangle = pygame.draw.polygon(screen, (255, 255, 255), self.triangle(), 2)
+        if self.phase_shift() is True:
+            player_triangle = pygame.draw.polygon(screen, (255, 255, 0), self.triangle(), 2)
+        else:
+            player_triangle = pygame.draw.polygon(screen, (255, 255, 255), self.triangle(), 2)
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
@@ -41,7 +47,14 @@ class Player(CircleShape):
                 if self.shoot_timer <= 0:
                     self.shoot(self.position)
                     self.shoot_timer = PLAYER_SHOOT_COOLDOWN
+            if keys[pygame.K_f]:
+                if self.phase_timer <= 0 and self.phase_cooldown <= 0:
+                    self.phase_shift()
+                    self.phase_timer = PLAYER_SHOOT_COOLDOWN * 10
+                    self.phase_cooldown = PLAYER_SHOOT_COOLDOWN * 100
 
+            self.phase_cooldown -= dt
+            self.phase_timer -= dt
             self.shoot_timer -= dt
 
     def move(self, dt):
@@ -51,3 +64,8 @@ class Player(CircleShape):
     def shoot(self, position):
         bullet  = Shot(position.x, position.y)
         bullet.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * 500
+
+    def phase_shift(self):
+        while self.phase_timer > 0:
+            return True
+        return False

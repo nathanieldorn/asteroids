@@ -36,16 +36,25 @@ def main():
         dt = clock.tick(60) / 1000
         for upd in updatable:
             upd.update(dt)
-        for coll in asteroids:
-            if coll.collision(player1) is False:
-                print("Game Over!")
-                pygame.quit()
-                return
-        for asteroid in asteroids:
-            for shot in shots:
-                if asteroid.collision(shot) is False:
-                    asteroid.split()
-                    shot.kill()
+        if player1.phase_shift() is False:
+            for coll in asteroids:
+                if coll.collision(player1) is False:
+                    print("Game Over!")
+                    print(f"Your score: {player1.player_score}")
+                    pygame.quit()
+                    return
+            for asteroid in asteroids:
+                for shot in shots:
+                    if asteroid.collision(shot) is False:
+                        asteroid.split()
+                        shot.kill()
+                        if asteroid.radius / ASTEROID_MIN_RADIUS == 3:
+                            player1.player_score += 1
+                        elif asteroid.radius / ASTEROID_MIN_RADIUS == 2:
+                            player1.player_score += 2
+                        elif asteroid.radius / ASTEROID_MIN_RADIUS == 1:
+                            player1.player_score += 3
+
         screen.fill("black")
         for drw in drawable:
             drw.draw(screen)
