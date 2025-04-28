@@ -33,11 +33,9 @@ class Player(CircleShape):
             if self.warp_cooldown > 0:
                 forward = pygame.Vector2(0, 1).rotate(self.rotation)
                 right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
-                a = self.position + forward * self.radius
-                b = self.position - forward * self.radius - right
-                c = self.position - forward * self.radius + right
-                ship_overheat = pygame.draw.line(screen, (255, 0, 0), (b), (c), 2)
-                #pygame.draw.polygon(screen, (255, 0, 0), self.triangle(), 2)
+                engine_1 = self.position - forward * self.radius - right
+                engine_2 = self.position - forward * self.radius + right
+                engine_overheat = pygame.draw.line(screen, (255, 0, 0), (engine_1), (engine_2), 2)
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt
